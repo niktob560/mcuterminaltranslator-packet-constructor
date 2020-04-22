@@ -61,71 +61,78 @@ if [ -z $1 ]; then #do input
     echo "Type of pachet [cmd/var/arr]"
     read line
     mode=$line
-    case $mode in
-        "cmd")
-            head=64; echo "Print cmd id in dec"
-            ;;
-        "var")
-            head=128; echo "Print var id and var in dec"
-            ;;
-        "arr")
-            head=192; echo "Print array id and array in dec"
-            ;;
-        *)
-            echo -e $LRED"Packet type invalid"$NORMAL; exit 1
-            ;;
-    esac
-    
-
-    #get payload
-    read line
-    #encode payload to hex
-    for i in $line; do
-        a=$(echo $i | tr -d '\n')
-        a=$(dec2hex $a)
-        payload=$payload"$a "
-    done
-
-    #get num of bytes
-    word_len=$(echo $payload | tr -d ' ' | wc -c)
-    len=$(($word_len/2))
-
-    #validate length
-    if [[ "$mode" == "cmd" ]]; then
-        if (( $len != 1 )); then
-            echo -e $LRED"Cmd can have only len=1"$NORMAL; exit 1
-        fi
-    fi
-    if (( $len > 63 )); then
-        echo -e $LRED"Payload max len is 63"$NORMAL; exit 1
-    fi
-
-    #construct header byte
-    head=$(( $head + $len ))
-    head=$(dec2hex $head)
-
-    #construct raw packet
-    packet=$head" 00 00 "$payload
-
-    #construct checksum
-    index=0
-    ch0=0
-    ch1=1
-    for i in $packet; do
-        a=$(echo "ibase=16; $i" | bc)
-        if (( $(($index%2)) != 0 )); then
-            ch0=$(( $ch0 + $a ))
-        else
-            ch1=$(( $ch1 + $a ))
-        fi
-        index=$(($index+1))
-    done
-    ch0=$(( $ch0 % 255 ))
-    ch1=$(( $ch1 % 255 ))
-
-    ch0=$(dec2hex $ch0)
-    ch1=$(dec2hex $ch1)
-
-    packet=$head" "$ch0" "$ch1" "$payload
-    echo "Final packet: $packet"
+else
+    mode=$1
 fi
+case $mode in
+    "cmd")
+        head=64; echo "Print cmd id in dec"
+        ;;
+    "var")
+        head=128; echo "Print var id and var in dec"
+        ;;
+    "arr")
+        head=192; echo "Print array id and array in dec"
+        ;;
+    *)
+        echo -e $LRED"Packet type invalid"$NORMAL; exit 1
+        ;;
+esac
+
+#get payload
+if [ -z $2 ]; then
+    read line
+else
+    line=$2
+fi
+
+
+#encode payload to hex
+for i in $line; do
+    a=$(echo $i | tr -d '\n')
+    a=$(dec2hex $a)
+    payload=$payload"$a "
+done
+
+#get num of bytes
+word_len=$(echo $payload | tr -d ' ' | wc -c)
+len=$(($word_len/2))
+
+#validate length
+if [[ "$mode" == "cmd" ]]; then
+    if (( $len != 1 )); then
+        echo -e $LRED"Cmd can have only len=1"$NORMAL; exit 1
+    fi
+fi
+if (( $len > 63 )); then
+    echo -e $LRED"Payload max len is 63"$NORMAL; exit 1
+fi
+
+#construct header byte
+head=$(( $head + $len ))
+head=$(dec2hex $head)
+
+#construct raw packet
+packet=$head" 00 00 "$payload
+
+#construct checksum
+index=0
+ch0=0
+ch1=1
+for i in $packet; do
+    a=$(echo "ibase=16; $i" | bc)
+    if (( $(($index%2)) != 0 )); then
+        ch0=$(( $ch0 + $a ))
+    else
+        ch1=$(( $ch1 + $a ))
+    fi
+    index=$(($index+1))
+done
+ch0=$(( $ch0 % 255 ))
+ch1=$(( $ch1 % 255 ))
+
+ch0=$(dec2hex $ch0)
+ch1=$(dec2hex $ch1)
+
+packet=$head" "$ch0" "$ch1" "$payload
+echo "Final packet: $packet"
