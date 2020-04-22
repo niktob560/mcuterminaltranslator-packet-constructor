@@ -1,5 +1,7 @@
 #!/bin/bash
 
+dir=$(echo "`dirname "$0"`")
+
 #Additional params for text:
 BOLD='\033[1m'          #  ${BOLD}          # bold font (intense color)
 DBOLD='\033[2m'         #  ${DBOLD}         # half-brightness color (dark-gray, regardless of color)
@@ -159,7 +161,7 @@ else
     packet=$head" "$ch0" "$ch1" "$dev_id" "$payload
 fi
 
-highlight="./mcuterminaltranslator-highlighter/highlight.sh"
+highlight="$dir/mcuterminaltranslator-highlighter/highlight.sh"
 
 if [[ ! -z $dev_id ]]; then
     highlight=$highlight" 1"
