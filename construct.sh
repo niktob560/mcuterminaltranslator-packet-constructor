@@ -58,6 +58,7 @@ dec2hex() {
 
 if [ -z $1 ]; then #do input
     #get type of packet
+    interactive=1
     echo "Type of pachet [cmd/var/arr]"
     read line
     mode=$line
@@ -66,13 +67,13 @@ else
 fi
 case $mode in
     "cmd")
-        head=64; echo "Print cmd id in dec"
+        head=64
         ;;
     "var")
-        head=128; echo "Print var id and var in dec"
+        head=128
         ;;
     "arr")
-        head=192; echo "Print array id and array in dec"
+        head=192
         ;;
     *)
         echo -e $LRED"Packet type invalid"$NORMAL; exit 1
@@ -81,6 +82,7 @@ esac
 
 #get payload
 if [ -z $2 ]; then
+    echo "Print payload byte-by-byte"
     read line
 else
     line=$2
@@ -135,4 +137,8 @@ ch0=$(dec2hex $ch0)
 ch1=$(dec2hex $ch1)
 
 packet=$head" "$ch0" "$ch1" "$payload
-echo "Final packet: $packet"
+if [ -z $interactive ]; then
+    echo $packet
+else
+    echo "Final packet: $packet"
+fi
