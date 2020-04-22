@@ -56,9 +56,7 @@ elif [ ! -z $interactive ]; then
 fi
 
 
-if [ ! -z $dev_id ]; then
-    dev_id=$(echo $dev_id | tr -d ' ')
-fi
+[ ! -z $dev_id ] && dev_id=$(echo $dev_id | tr -d ' ')
 
 # payload=$(echo $line | tr -s ' ')
 payload=$line
@@ -69,21 +67,13 @@ len=$(echo " "$payload | sed 's/\w//g' | wc -c)
 head=$(( $head + $len ))
 
 #construct raw packet
-if [ -z $dev_id ]; then
-    packet=$head" 0 0 "$payload
-else
-    packet=$head" 0 0 "$dev_id" "$payload
-fi
+[ -z $dev_id ] && packet=$head" 0 0 "$payload || packet=$head" 0 0 "$dev_id" "$payload
 
 #construct checksum
 index=0
 ch1=1
 for i in $packet; do
-    if (( $(( $index % 2 )) != 0 )); then
-        ch0=$(( $ch0 + $i ))
-    else
-        ch1=$(( $ch1 + $i ))
-    fi
+    (( $(( $index % 2 )) != 0 )) && ch0=$(( $ch0 + $i )) || ch1=$(( $ch1 + $i ))
     index=$(($index+1))
 done
 ch0=$(( $ch0 % 255 ))
@@ -104,8 +94,5 @@ else
     packet=$INVERSE''$LMAGENTA''$head" "$LCYAN" "$ch0"  "$ch1" "$LGREEN" "$dev_id" "$NORMAL" "$_payload
 fi
 
-if [ -z $interactive ]; then
-    echo -e "$packet"
-else
-    echo "Final packet: $(echo -e $packet)"
-fi
+[ -z $interactive ] && echo -e "$packet" || echo "Final packet: $(echo -e $packet)"
+
