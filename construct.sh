@@ -81,11 +81,24 @@ case $mode in
 esac
 
 #get payload
-if [ -z $2 ]; then
+if [ -z "$2" ]; then
     echo "Print payload byte-by-byte"
     read line
 else
     line=$2
+fi
+
+if [ ! -z "$3" ]; then
+    dev_id=$3
+elif [ ! -z $interactive ]; then
+    echo "Print device id"
+    read dev_id
+fi
+
+
+if [ ! -z $dev_id ]; then
+    dev_id=$(echo $dev_id | tr -d ' ')
+    dev_id=$(dec2hex $dev_id)
 fi
 
 
@@ -115,7 +128,11 @@ head=$(( $head + $len ))
 head=$(dec2hex $head)
 
 #construct raw packet
-packet=$head" 00 00 "$payload
+if [ -z $dev_id ]; then
+    packet=$head" 00 00 "$payload
+else
+    packet=$head" 00 00 "$dev_id" "$payload
+fi
 
 #construct checksum
 index=0
@@ -136,9 +153,20 @@ ch1=$(( $ch1 % 255 ))
 ch0=$(dec2hex $ch0)
 ch1=$(dec2hex $ch1)
 
-packet=$head" "$ch0" "$ch1" "$payload
-if [ -z $interactive ]; then
-    echo $packet
+if [ -z $dev_id ]; then
+    packet=$head" "$ch0" "$ch1" "$payload
 else
-    echo "Final packet: $packet"
+    packet=$head" "$ch0" "$ch1" "$dev_id" "$payload
+fi
+
+highlight="./mcuterminaltranslator-highlighter/highlight.sh"
+
+if [[ ! -z $dev_id ]]; then
+    highlight=$highlight" 1"
+fi
+
+if [ -z $interactive ]; then
+    echo $packet | $highlight
+else
+    echo "Final packet: $(echo $packet | $highlight)"
 fi
