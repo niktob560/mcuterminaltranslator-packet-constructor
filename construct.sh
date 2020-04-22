@@ -156,9 +156,9 @@ ch0=$(dec2hex $ch0)
 ch1=$(dec2hex $ch1)
 
 if [ -z $dev_id ]; then
-    packet=$head" "$ch0" "$ch1" "$payload
+    packet=$INVERSE''$LMAGENTA''$head" "$LCYAN" "$ch0"  "$ch1" "$NORMAL" "$payload
 else
-    packet=$head" "$ch0" "$ch1" "$dev_id" "$payload
+    packet=$INVERSE''$LMAGENTA''$head" "$LCYAN" "$ch0"  "$ch1" "$LGREEN" "$dev_id" "$NORMAL" "$payload
 fi
 
 highlight="$dir/mcuterminaltranslator-highlighter/highlight.sh"
@@ -168,7 +168,7 @@ if [[ ! -z $dev_id ]]; then
 fi
 
 if [ -z $interactive ]; then
-    echo $packet | $highlight
+    echo -e "$packet"
 else
-    echo "Final packet: $(echo $packet | $highlight)"
+    echo "Final packet: $(echo -e $packet)"
 fi
