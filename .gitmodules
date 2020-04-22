@@ -1,0 +1,3 @@
+[submodule "mcuterminaltranslator-highlighter"]
+	path = mcuterminaltranslator-highlighter
+	url = git@github.com:niktob560/mcuterminaltranslator-highlighter
